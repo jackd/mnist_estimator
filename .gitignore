@@ -1,2 +1,4 @@
 *.pyc
+*.npy
 model
+__pycache__
