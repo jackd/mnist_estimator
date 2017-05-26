@@ -2,7 +2,6 @@
 import os
 import json
 import tensorflow as tf
-import tensorflow.contrib.learn as learn
 
 _n_classes = 10
 
