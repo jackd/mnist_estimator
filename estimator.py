@@ -68,7 +68,7 @@ def _unpack_features(features):
     return index, image
 
 
-def _get_logits(image, conv_filters, dense_nodes):
+def _get_logits(image, conv_filters, dense_nodes, training):
     if len(image.shape) != 4:
         raise ValueError('image tensor must be 4d')
     conv_initializer = tf.contrib.layers.xavier_initializer()
@@ -78,13 +78,13 @@ def _get_logits(image, conv_filters, dense_nodes):
         x = tf.layers.conv2d(
             x, n, 3, padding='SAME', activation=tf.nn.relu,
             kernel_initializer=conv_initializer)
-        x = tf.layers.batch_normalization(x, scale=False)
+        x = tf.layers.batch_normalization(x, scale=False, training=training)
     x = tf.contrib.layers.flatten(x)
     for n in dense_nodes:
         x = tf.layers.dense(
             x, n, activation=tf.nn.relu,
             kernel_initializer=fc_initializer)
-        x = tf.layers.batch_normalization(x, scale=False)
+        x = tf.layers.batch_normalization(x, scale=False, training=training)
     x = tf.layers.dense(
         x, _n_classes, activation=None,
         kernel_initializer=fc_initializer)
@@ -109,7 +109,9 @@ def _get_train_op(loss, learning_rate):
         step = steps[0]
     else:
         raise Exception('Multiple global steps disallowed')
-    train_op = optimizer.minimize(loss, step)
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        train_op = optimizer.minimize(loss, step)
     return train_op
 
 
@@ -125,9 +127,11 @@ def _get_accuracy(labels, predictions):
 
 def _model_fn(features, labels, mode, params, config):
     indices, images = _unpack_features(features)
+    training = mode == tf.estimator.ModeKeys.TRAIN
     logits = _get_logits(
-        images, params['conv_filters'], params['dense_nodes'])
-    if mode == tf.estimator.ModeKeys.TRAIN:
+        images, params['conv_filters'], params['dense_nodes'],
+        training=training)
+    if training:
         loss = _get_loss(logits, labels)
         train_op = _get_train_op(loss, params['learning_rate'])
         return tf.estimator.EstimatorSpec(
