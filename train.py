@@ -1,16 +1,19 @@
 """Example usage of MnistEstimator and MnistPreprocessor for training."""
 import tensorflow as tf
-from preprocess.example.corrupt import CorruptingPreprocessor
+from preprocess.example.mnist import MnistPreprocessor
+from preprocess.example.corrupt import get_corrupt_fn
 from preprocess.example.mnist import MnistDataset
 from estimator import mnist_estimator, configure_estimator, is_configured
+
+drop_prob = 0.5
 
 
 def input_fn():
     """Input function for estimator.train."""
     # from tensorflow.examples.tutorials.mnist import input_data
     # mnist = input_data.read_data_sets('MNIST_data/', one_hot=False)
-    preprocessor = CorruptingPreprocessor(
-        MnistDataset.TRAIN, drop_prob=0.5)
+    preprocessor = MnistPreprocessor(
+        MnistDataset.TRAIN).map(get_corrupt_fn(drop_prob))
     image, labels = preprocessor.get_preprocessed_batch(
         batch_size, shuffle=True)
     image = tf.expand_dims(image, axis=-1)
