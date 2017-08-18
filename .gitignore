@@ -1,4 +1,5 @@
 *.pyc
 *.npy
 model
+MNIST_data
 __pycache__

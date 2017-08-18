@@ -1,10 +1,9 @@
 # MNIST Estimator
-This collection of scripts showcases the use of a custom `preprocess.Preprocessor` with a `tf.estimator.Estimator`.
+This collection of scripts showcases the use of `tf.contrib.data.Dataset` with a `tf.estimator.Estimator`.
 
 ## Requirements
-* [Tensorflow](https://www.tensorflow.org/) 1.0
+* [Tensorflow](https://www.tensorflow.org/) 1.1
 * [Numpy](http://www.numpy.org/)
-* [preprocess](https://github.com/jackd/preprocess)
 
 ## Structure
 The model is defined in `estimator.py`. The default model is very simple, with two `3x3` convolution layers and two fully connected layers, with batch normalization after each convolution and the the first fully connected layer.

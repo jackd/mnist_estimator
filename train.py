@@ -1,34 +1,34 @@
 """Example usage of MnistEstimator and MnistPreprocessor for training."""
 import tensorflow as tf
-from preprocess.example.mnist import MnistPreprocessor
-from preprocess.example.corrupt import get_corrupt_fn
-from preprocess.example.mnist import MnistDataset
-from estimator import mnist_estimator, configure_estimator, is_configured
+from dataset import mnist_dataset, DatasetKeys
+from estimator import mnist_estimator
 
 drop_prob = 0.5
+batch_size = 128
+
+
+def get_corrupt_fn(drop_prob):
+    if drop_prob == 0:
+        return None
+    else:
+        def corrupt(images, labels):
+            drop = tf.to_float(tf.greater(
+                tf.random_uniform(images.shape, dtype=tf.float32), drop_prob))
+            return images * drop, labels
+    return corrupt
 
 
 def input_fn():
     """Input function for estimator.train."""
-    # from tensorflow.examples.tutorials.mnist import input_data
-    # mnist = input_data.read_data_sets('MNIST_data/', one_hot=False)
-    preprocessor = MnistPreprocessor(
-        MnistDataset.TRAIN).map(get_corrupt_fn(drop_prob))
-    image, labels = preprocessor.get_preprocessed_batch(
-        batch_size, shuffle=True)
-    image = tf.expand_dims(image, axis=-1)
-    return image, labels
+    dataset = mnist_dataset(DatasetKeys.TRAIN)
+    dataset = dataset.map(get_corrupt_fn(drop_prob))
+    dataset = dataset.shuffle(10000).repeat().batch(batch_size)
+    images, labels = dataset.make_one_shot_iterator().get_next()
+    images = tf.expand_dims(images, axis=-1)
+    return images, labels
 
 
-model_name = 'base'
-
-if not is_configured(model_name):
-    conv_filters = [8, 16]
-    dense_nodes = [64]
-    configure_estimator(model_name, conv_filters, dense_nodes)
-estimator = mnist_estimator(model_name, learning_rate=1e-3)
-
-batch_size = 128
+estimator = mnist_estimator(learning_rate=1e-3)
 max_steps = 10000
 
 estimator.train(input_fn=input_fn, max_steps=max_steps)
