@@ -1,7 +1,6 @@
 """tf.contrib.data.Dataset wrapper to mnist input_data."""
 import os
 import tensorflow as tf
-from tensorflow.contrib.data import Dataset
 from tensorflow.examples.tutorials.mnist import input_data
 
 
@@ -36,7 +35,7 @@ def mnist_dataset(dataset_key=DatasetKeys.TRAIN):
     #     'labels': labels,
     # }
     tensors = images, labels
-    return Dataset.from_tensor_slices(tensors)
+    return tf.data.Dataset.from_tensor_slices(tensors)
 
 
 def get_test_labels():
