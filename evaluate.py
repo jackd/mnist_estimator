@@ -1,7 +1,6 @@
 """Example usage of MnistEstimator and MnistPreprocessor for evaluating."""
 import tensorflow as tf
 from dataset import mnist_dataset, DatasetKeys
-from estimator import mnist_estimator
 
 
 batch_size = 128
@@ -15,6 +14,8 @@ def input_fn():
     return images, labels
 
 
-estimator = mnist_estimator()
-evaluation = estimator.evaluate(input_fn=input_fn)
-print(evaluation)
+if __name__ == '__main__':
+    from estimator import EstimatorBuilder
+    estimator = EstimatorBuilder().get_estimator()
+    evaluation = estimator.evaluate(input_fn=input_fn)
+    print(evaluation)

@@ -1,10 +1,6 @@
 """Example usage of MnistEstimator and MnistPreprocessor for training."""
 import tensorflow as tf
 from dataset import mnist_dataset, DatasetKeys
-from estimator import mnist_estimator
-
-drop_prob = 0.5
-batch_size = 128
 
 
 def get_corrupt_fn(drop_prob):
@@ -18,17 +14,27 @@ def get_corrupt_fn(drop_prob):
     return corrupt
 
 
-def input_fn():
-    """Input function for estimator.train."""
-    dataset = mnist_dataset(DatasetKeys.TRAIN)
-    dataset = dataset.map(get_corrupt_fn(drop_prob))
-    dataset = dataset.shuffle(10000).repeat().batch(batch_size)
-    images, labels = dataset.make_one_shot_iterator().get_next()
-    images = tf.expand_dims(images, axis=-1)
-    return images, labels
+def get_input_fn(batch_size, drop_prob=0.5):
+    def input_fn():
+        """Input function for estimator.train."""
+        dataset = mnist_dataset(DatasetKeys.TRAIN)
+        dataset = dataset.map(get_corrupt_fn(drop_prob))
+        dataset = dataset.shuffle(10000).repeat().batch(batch_size)
+        images, labels = dataset.make_one_shot_iterator().get_next()
+        images = tf.expand_dims(images, axis=-1)
+        return images, labels
+    return input_fn
 
 
-estimator = mnist_estimator(learning_rate=1e-3)
-max_steps = 10000
+def train(builder, batch_size=128, drop_prob=0.5, max_steps=10000,
+          **train_kwargs):
+    tf.logging.set_verbosity(tf.logging.INFO)
+    estimator = builder.get_estimator()
+    estimator.train(
+        input_fn=get_input_fn(batch_size, drop_prob), max_steps=max_steps,
+        **train_kwargs)
 
-estimator.train(input_fn=input_fn, max_steps=max_steps)
+
+if __name__ == '__main__':
+    from estimator import EstimatorBuilder
+    train(EstimatorBuilder())

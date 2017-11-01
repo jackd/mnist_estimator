@@ -1,5 +1,5 @@
 *.pyc
 *.npy
-model
+models
 MNIST_data
 __pycache__
