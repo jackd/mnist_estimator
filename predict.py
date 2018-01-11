@@ -5,18 +5,18 @@ import tensorflow as tf
 
 from dataset import mnist_dataset, DatasetKeys, get_test_labels
 
-batch_size = 128
+
+def get_input_fn(batch_size):
+    def input_fn():
+        """Input function for estimator.fit."""
+        dataset = mnist_dataset(DatasetKeys.TEST).batch(batch_size)
+        images, labels = dataset.make_one_shot_iterator().get_next()
+        return tf.expand_dims(images, axis=-1),
+    return input_fn
 
 
-def input_fn():
-    """Input function for estimator.fit."""
-    dataset = mnist_dataset(DatasetKeys.TEST).batch(batch_size)
-    images, labels = dataset.make_one_shot_iterator().get_next()
-    return tf.expand_dims(images, axis=-1),
-
-
-def main(estimator):
-    predictions = list(estimator.predict(input_fn=input_fn))
+def main(estimator, batch_size=128):
+    predictions = list(estimator.predict(input_fn=get_input_fn(batch_size)))
 
     np.save('test_predictions.npy', predictions)
 

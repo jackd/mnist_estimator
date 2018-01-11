@@ -30,10 +30,6 @@ def mnist_dataset(dataset_key=DatasetKeys.TRAIN):
     data = _get_data(dataset_key)
     images = tf.constant(data.images.reshape(-1, 28, 28))
     labels = tf.constant(data.labels, dtype=tf.int32)
-    # tensors = {
-    #     'images': images,
-    #     'labels': labels,
-    # }
     tensors = images, labels
     return tf.data.Dataset.from_tensor_slices(tensors)
 

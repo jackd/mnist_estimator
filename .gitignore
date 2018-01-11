@@ -3,3 +3,4 @@
 models
 MNIST_data
 __pycache__
+primitive/model
